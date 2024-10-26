@@ -34,7 +34,7 @@ void init_pins()
     gpio_pin_configure_dt(&pir_pin_1, GPIO_INPUT);
 }
 
-void run_zipline(bool direction)
+void run_zipline(int direction)
 {
     switch (direction)
     {
@@ -65,7 +65,15 @@ void run_application()
 
     while (1) 
     {
-
+        if (gpio_pin_get_dt(&sw_pin_1))
+        {
+            gpio_pin_set_dt(&led, 0);
+        }
+        else
+        {
+            gpio_pin_set_dt(&led, 1);
+        }
+        k_msleep(1000);
     }
 }
     
