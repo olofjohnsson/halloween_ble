@@ -17,3 +17,8 @@ target_sources(app PRIVATE
 
 # NORDIC SDK APP END
 zephyr_library_include_directories(.)
+
+add_custom_command(TARGET app POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/zephyr/app_update.bin //nasen/NASEN/Dokument/fota
+    COMMENT "Copying app_update.bin to specified folder"
+)

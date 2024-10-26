@@ -4,6 +4,7 @@
 #include <zephyr/sys/printk.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/settings/settings.h>
+#include <bluetooth/services/lbs.h>
 
 static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(redled), gpios);
 
@@ -31,21 +32,28 @@ void run_application()
     }
 
     while (1) {
+        bt_lbs_send_button_state(true);
         k_msleep(1000);
         gpio_pin_set_dt(&led, 1);
         gpio_pin_set_dt(&gate_pin_1, 1);
         //send_start_motor_command();
+        bt_lbs_send_button_state(false);
         k_msleep(1000);
         gpio_pin_set_dt(&gate_pin_1, 0);
         gpio_pin_set_dt(&led, 0);
+        bt_lbs_send_button_state(true);
         k_msleep(1000);
 
         gpio_pin_set_dt(&led, 1);
         gpio_pin_set_dt(&gate_pin_2, 1);
         //send_start_motor_command();
+        bt_lbs_send_button_state(false);
         k_msleep(1000);
         gpio_pin_set_dt(&gate_pin_2, 0);
         gpio_pin_set_dt(&led, 0);
+
+        
+        
     }
 }
     
