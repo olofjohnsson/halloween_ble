@@ -22,6 +22,22 @@ static const struct gpio_dt_spec pir_pin_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(pir_1
 static const struct gpio_dt_spec sw_pwr_pin_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(sw_pwr_1), gpios);
 static const struct gpio_dt_spec sw_pwr_pin_2 = GPIO_DT_SPEC_GET(DT_NODELABEL(sw_pwr_2), gpios);
 
+static struct gpio_callback sw_1_cb_data;
+
+/* Interrupt callback function */
+void sw_1_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
+{
+    if (gpio_pin_get_dt(&sw_pin_1))
+    {
+        gpio_pin_set_dt(&led, 0);
+    }
+    else
+    {
+        gpio_pin_set_dt(&led, 1);
+    }
+    
+}
+
 void init_pins()
 {
     gpio_pin_configure_dt(&led, GPIO_OUTPUT);
@@ -32,6 +48,15 @@ void init_pins()
     gpio_pin_configure_dt(&sw_pin_1, GPIO_INPUT);
     gpio_pin_configure_dt(&sw_pin_2, GPIO_INPUT);
     gpio_pin_configure_dt(&pir_pin_1, GPIO_INPUT);
+
+    /* Configure sw_pin_1 as interrupt on falling edge */
+    gpio_pin_interrupt_configure_dt(&sw_pin_1, GPIO_INT_EDGE_BOTH);
+
+    /* Initialize GPIO callback */
+    gpio_init_callback(&sw_1_cb_data, sw_1_pressed, BIT(sw_pin_1.pin));
+    gpio_add_callback(sw_pin_1.port, &sw_1_cb_data);
+
+    printk("Pins initialized and interrupt configured for sw_pin_1\n");
 }
 
 void run_zipline(int direction)
@@ -65,14 +90,6 @@ void run_application()
 
     while (1) 
     {
-        if (gpio_pin_get_dt(&sw_pin_1))
-        {
-            gpio_pin_set_dt(&led, 0);
-        }
-        else
-        {
-            gpio_pin_set_dt(&led, 1);
-        }
         k_msleep(1000);
     }
 }
