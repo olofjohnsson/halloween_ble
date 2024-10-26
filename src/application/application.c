@@ -11,25 +11,31 @@ static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(redled), gpios)
 /* Declare GPIO device structs */
 static const struct gpio_dt_spec gate_pin_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(gate_1), gpios);
 static const struct gpio_dt_spec gate_pin_2 = GPIO_DT_SPEC_GET(DT_NODELABEL(gate_2), gpios);
+static const struct gpio_dt_spec sw_pin_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(sw_1), gpios);
+static const struct gpio_dt_spec sw_pin_2 = GPIO_DT_SPEC_GET(DT_NODELABEL(sw_2), gpios);
+static const struct gpio_dt_spec sw_pwr_pin_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(sw_pwr_1), gpios);
+static const struct gpio_dt_spec sw_pwr_pin_2 = GPIO_DT_SPEC_GET(DT_NODELABEL(sw_pwr_2), gpios);
+
+void init_pins()
+{
+    gpio_pin_configure_dt(&led, GPIO_OUTPUT);
+    gpio_pin_configure_dt(&gate_pin_1, GPIO_OUTPUT_INACTIVE);
+    gpio_pin_configure_dt(&gate_pin_2, GPIO_OUTPUT_INACTIVE);
+    gpio_pin_configure_dt(&sw_pwr_pin_1, GPIO_OUTPUT_ACTIVE);
+    gpio_pin_configure_dt(&sw_pwr_pin_2, GPIO_OUTPUT_ACTIVE);
+    gpio_pin_configure_dt(&sw_pin_1, GPIO_INPUT);
+    gpio_pin_configure_dt(&sw_pin_2, GPIO_INPUT);
+}
 
 void run_application()
 {
     printk("Starting application\n");
 
-    gpio_pin_configure_dt(&led, GPIO_OUTPUT);
+    init_pins();
 
     bluetooth_init();
 
     bluetooth_start_advertising();
-
-    if (gate_pin_1.port)
-    {
-         gpio_pin_configure_dt(&gate_pin_1, GPIO_OUTPUT_INACTIVE);
-    }
-    if (gate_pin_2.port)
-    {
-         gpio_pin_configure_dt(&gate_pin_2, GPIO_OUTPUT_INACTIVE);
-    }
 
     while (1) {
         bt_lbs_send_button_state(true);
@@ -51,9 +57,6 @@ void run_application()
         k_msleep(1000);
         gpio_pin_set_dt(&gate_pin_2, 0);
         gpio_pin_set_dt(&led, 0);
-
-        
-        
     }
 }
     
