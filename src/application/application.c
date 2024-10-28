@@ -20,6 +20,7 @@ static const struct gpio_dt_spec gate_pin_2 = GPIO_DT_SPEC_GET(DT_NODELABEL(gate
 static const struct gpio_dt_spec sw_pin_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(sw_1), gpios);
 static const struct gpio_dt_spec sw_pin_2 = GPIO_DT_SPEC_GET(DT_NODELABEL(sw_2), gpios);
 static const struct gpio_dt_spec pir_pin_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(pir_1), gpios);
+static const struct gpio_dt_spec button_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(button_1), gpios);
 //static const struct gpio_dt_spec sw_pwr_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(sw_pwr_1), gpios);
 
 static struct gpio_callback sw_1_cb_data;
@@ -33,13 +34,9 @@ void run_zipline(int direction)
     switch (direction)
     {
         case 0:
-            gpio_pin_set_dt(&gate_pin_1, 0);
-            k_msleep(50);
             gpio_pin_set_dt(&gate_pin_2, 1);
             break;
         case 1:
-            gpio_pin_set_dt(&gate_pin_2, 0);
-            k_msleep(50);
             gpio_pin_set_dt(&gate_pin_1, 1);
             
             break;
@@ -55,7 +52,7 @@ void sw_1_activated(const struct device *dev, struct gpio_callback *cb, uint32_t
 {
     gpio_pin_set_dt(&gate_pin_1, 0);
     gpio_pin_set_dt(&gate_pin_2, 0);
-    gpio_pin_set_dt(&gate_pin_1, 1);
+    gpio_pin_set_dt(&led, 0);
     dir = CCW;
 }
 
@@ -64,7 +61,7 @@ void sw_2_activated(const struct device *dev, struct gpio_callback *cb, uint32_t
 {
     gpio_pin_set_dt(&gate_pin_1, 0);
     gpio_pin_set_dt(&gate_pin_2, 0);
-    gpio_pin_set_dt(&gate_pin_2, 1);
+    gpio_pin_set_dt(&led, 1);
     dir = CW;
 }
 
@@ -83,6 +80,7 @@ void init_pins()
     gpio_pin_configure_dt(&sw_pin_1, GPIO_INPUT);
     gpio_pin_configure_dt(&sw_pin_2, GPIO_INPUT);
     gpio_pin_configure_dt(&pir_pin_1, GPIO_PULL_DOWN);
+    gpio_pin_configure_dt(&button_1, GPIO_PULL_UP);
 
     /* Configure sw_pin_1 as interrupt on falling edge */
     gpio_pin_interrupt_configure_dt(&sw_pin_1, GPIO_INT_EDGE_FALLING);
