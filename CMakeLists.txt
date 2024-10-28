@@ -19,6 +19,6 @@ target_sources(app PRIVATE
 zephyr_library_include_directories(.)
 
 add_custom_command(TARGET app POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/zephyr/app_update.bin //nasen/NASEN/Dokument/fota
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/zephyr/app_update.bin C:/Users/Olof/OneDrive/DFU
     COMMENT "Copying app_update.bin to specified folder"
 )
