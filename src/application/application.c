@@ -32,6 +32,7 @@ static const struct gpio_dt_spec sw_pin_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(sw_1),
 static const struct gpio_dt_spec sw_pin_2 = GPIO_DT_SPEC_GET(DT_NODELABEL(sw_2), gpios);
 static const struct gpio_dt_spec pir_pin_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(pir_1), gpios);
 static const struct gpio_dt_spec button_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(button_1), gpios);
+static const struct gpio_dt_spec sw_pin_mp3 = GPIO_DT_SPEC_GET(DT_NODELABEL(sw_mp3), gpios);
 
 /* Declare callbacks */
 static struct gpio_callback sw_1_cb_data;
@@ -41,9 +42,15 @@ static struct gpio_callback pir_1_cb_data;
 static uint8_t pir_motion = NO_MOTION_DETECTED;
 static uint8_t motor = MOTOR_NOT_RUNNING;
 
+void start_mp3()
+{
+    gpio_pin_set_dt(&sw_pin_mp3, 1);
+}
+
 void run_zipline(int direction)
 {
     motor = MOTOR_RUNNING;
+    start_mp3();
     switch (direction)
     {
         case CW:
@@ -88,7 +95,8 @@ void init_pins()
     gpio_pin_configure_dt(&led, GPIO_OUTPUT_INACTIVE);
     gpio_pin_configure_dt(&gate_pin_1, GPIO_OUTPUT_INACTIVE);
     gpio_pin_configure_dt(&gate_pin_2, GPIO_OUTPUT_INACTIVE);
-    //gpio_pin_configure_dt(&sw_pwr_1, GPIO_OUTPUT_ACTIVE);
+    gpio_pin_configure_dt(&sw_pin_mp3, GPIO_OPEN_DRAIN);
+
     gpio_pin_configure_dt(&sw_pin_1, GPIO_PULL_UP);
     gpio_pin_configure_dt(&sw_pin_2, GPIO_PULL_UP);
     gpio_pin_configure_dt(&pir_pin_1, GPIO_PULL_DOWN);
