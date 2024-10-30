@@ -130,7 +130,7 @@ void run_application()
     {
         if(motor == MOTOR_REWIND)
         {
-            k_msleep(5000);s
+            k_msleep(5000);
             run_zipline(CCW);
         }
         k_msleep(1000);
