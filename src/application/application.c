@@ -14,7 +14,8 @@ typedef enum {
 
 typedef enum {
     NO_MOTION_DETECTED,
-    MOTION_DETECTED
+    MOTION_DETECTED,
+    MOTION_CYCLE_ENDED
 } pir_detection;
 
 typedef enum {
@@ -32,14 +33,34 @@ static const struct gpio_dt_spec sw_pin_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(sw_1),
 static const struct gpio_dt_spec sw_pin_2 = GPIO_DT_SPEC_GET(DT_NODELABEL(sw_2), gpios);
 static const struct gpio_dt_spec pir_pin_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(pir_1), gpios);
 static const struct gpio_dt_spec button_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(button_1), gpios);
+static const struct gpio_dt_spec sw_pin_light = GPIO_DT_SPEC_GET(DT_NODELABEL(sw_light), gpios);
+static const struct gpio_dt_spec sw_pin_mp3 = GPIO_DT_SPEC_GET(DT_NODELABEL(sw_mp3), gpios);
 
 /* Declare callbacks */
 static struct gpio_callback sw_1_cb_data;
 static struct gpio_callback sw_2_cb_data;
 static struct gpio_callback pir_1_cb_data;
 
-static uint8_t pir_motion = NO_MOTION_DETECTED;
+static uint8_t pir_motion = MOTION_CYCLE_ENDED;
 static uint8_t motor = MOTOR_NOT_RUNNING;
+
+
+ void light_off()
+ {
+    gpio_pin_set_dt(&sw_pin_light, 0);
+ }
+
+ void light_on()
+ {
+    gpio_pin_set_dt(&sw_pin_light, 1);
+ }
+
+ void mp3_on()
+ {
+    gpio_pin_set_dt(&sw_pin_mp3, 0);
+    k_msleep(500);
+    gpio_pin_set_dt(&sw_pin_mp3, 1);
+ }
 
 void run_zipline(int direction)
 {
@@ -75,12 +96,16 @@ void sw_2_activated(const struct device *dev, struct gpio_callback *cb, uint32_t
     gpio_pin_set_dt(&gate_pin_2, 0);
     gpio_pin_set_dt(&led, 1);
     motor = MOTOR_NOT_RUNNING;
+    pir_motion = MOTION_CYCLE_ENDED;
 }
 
 /* Interrupt callback function for PIR motion sensor */
 void pir_activated(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
-    run_zipline(CW);
+    if (pir_motion == MOTION_CYCLE_ENDED)
+    {
+        pir_motion = MOTION_DETECTED;
+    }
 }
 
 void init_pins()
@@ -88,6 +113,8 @@ void init_pins()
     gpio_pin_configure_dt(&led, GPIO_OUTPUT_INACTIVE);
     gpio_pin_configure_dt(&gate_pin_1, GPIO_OUTPUT_INACTIVE);
     gpio_pin_configure_dt(&gate_pin_2, GPIO_OUTPUT_INACTIVE);
+    gpio_pin_configure_dt(&sw_pin_light, GPIO_OUTPUT_INACTIVE);
+    gpio_pin_configure_dt(&sw_pin_mp3, GPIO_OUTPUT_ACTIVE);
     //gpio_pin_configure_dt(&sw_pwr_1, GPIO_OUTPUT_ACTIVE);
     gpio_pin_configure_dt(&sw_pin_1, GPIO_PULL_UP);
     gpio_pin_configure_dt(&sw_pin_2, GPIO_PULL_UP);
@@ -128,10 +155,21 @@ void run_application()
 
     while (1) 
     {
+        if(pir_motion == MOTION_DETECTED)
+        {
+            mp3_on();
+            light_on();
+            run_zipline(CW);
+            pir_motion = NO_MOTION_DETECTED;
+        }
+
         if(motor == MOTOR_REWIND)
         {
-            k_msleep(5000);
+            k_msleep(2000);
+            light_off();
+            k_msleep(10000);
             run_zipline(CCW);
+            
         }
         k_msleep(1000);
     }
